@@ -34,3 +34,5 @@
 LICENSE
 LICENSE
 *.weights
+yolov4-tiny.cfg
+yolov3.cfg
