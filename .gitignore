@@ -33,3 +33,4 @@
 .vscode/arduino.json
 LICENSE
 LICENSE
+*.weights
