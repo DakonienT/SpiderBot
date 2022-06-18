@@ -4,12 +4,27 @@ from flask import Flask, render_template, Response, request
 import cv2
 import logging
 from datetime import datetime
-import socket
+import socket #to get IP
+import psutil #to get res usage
+import os
+
 
 #Initialize the Flask app
 app = Flask(__name__)
 camera = cv2.VideoCapture(0)
-scale_percent = 100
+scale_percent = 120
+pid = os.getpid() #Get PID of the program
+print(pid)
+def getRes():
+    CPU = psutil.cpu_percent()
+    VMem = dict(psutil.virtual_memory()._asdict())
+    VMemPercent = psutil.virtual_memory().percent
+    AvMem = psutil.virtual_memory().available * 100 / psutil.virtual_memory().total
+    PSPID = psutil.Process(pid)
+    CPUForCurr = PSPID.cpu_percent
+    stringRet ="PID : " + str(pid) + "\n"+ "CPU : " + str(CPU) + "\n" + "Virtual Memory : " + str(VMemPercent) + "\n" + "Available mMemory : " + str(AvMem) + "\n" + "Current CPU use for process : " + str(CPUForCurr) + "\n"
+    
+    return CPU, VMemPercent, AvMem, CPUForCurr
 
 def gen_frames():  
     global record
@@ -26,8 +41,14 @@ def gen_frames():
         #Put date & time        
         now = datetime.now()
         dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-        frame = cv2.putText(frame, dt_string, (30,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 2,cv2.LINE_AA)
+        frame = cv2.putText(frame, dt_string, (10,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 2,cv2.LINE_AA)
 
+        #Get process DATA
+        cv2.putText(frame, "PID : " + str(pid), (10,80), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,0,0), 1,cv2.LINE_AA)
+        cv2.putText(frame, "CPU : " + str(getRes()[0]) + "%", (10,95), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,0,0), 1,cv2.LINE_AA)
+        cv2.putText(frame, "Virtual Memory : " + str(getRes()[1]) + "%", (10,110), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,0,0), 1,cv2.LINE_AA)
+        cv2.putText(frame, "CPU For process : " + str(getRes()[2]) + "%", (10,125), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,0,0), 1,cv2.LINE_AA)
+        #print(getRes())
         #Record
         
         if(record):
@@ -77,3 +98,4 @@ if __name__ == "__main__":
     logging.info("IP : %s", IPAddr)
     logging.info("Loading FLASK appliction...")
     app.run(debug=False,host=IPAddr)
+    logging.info("Server ready !")
