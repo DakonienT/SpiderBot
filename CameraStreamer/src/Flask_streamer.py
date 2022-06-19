@@ -47,7 +47,6 @@ def getRes():
     
     return CPU, VMemPercent, AvMem, CPUForCurr
 
-
 def YOLO(frame, dsize):
     blob = cv2.dnn.blobFromImage(frame, 1/255.0, dsize, swapRB=True, crop=False)
     r = blob[0, 0, :, :]
@@ -62,7 +61,7 @@ def YOLO(frame, dsize):
             scores = detection[5:]
             classID = np.argmax(scores)
             confidence = scores[classID]
-            if confidence > 0.5:
+            if confidence > 0.1:
                 box = detection[:4] * np.array([w, h, w, h])
                 (centerX, centerY, width, height) = box.astype("int")
                 x = int(centerX - (width / 2))
@@ -76,11 +75,12 @@ def YOLO(frame, dsize):
         for i in indices.flatten():
             (x, y) = (boxes[i][0], boxes[i][1])
             (w, h) = (boxes[i][2], boxes[i][3])
-            color = [int(c) for c in colors[classIDs[i]]]
-            cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
-            text = "{}: {:.4f}".format(classes[classIDs[i]], confidences[i])
-            cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
-    return frame
+            color = (0,0,255)
+            if (classes[classIDs[i]] == 'person'):
+                cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+                text = "{}: {:.4f}".format(classes[classIDs[i]], confidences[i])
+                cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+    return frame, boxes
 
 def gen_frames():  
     global record
@@ -100,7 +100,8 @@ def gen_frames():
         frame = cv2.resize(frame, dsize)
 
         #YoLo
-        frame = YOLO(frame, dsize)
+        frame, result = YOLO(frame, dsize)
+
         #Put date & time        
         now = datetime.now()
         dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
