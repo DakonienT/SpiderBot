@@ -35,3 +35,9 @@ LICENSE
 LICENSE
 *.weights
 yolov3.cfg
+CameraStreamer.egg-info/dependency_links.txt
+CameraStreamer.egg-info/PKG-INFO
+CameraStreamer.egg-info/requires.txt
+CameraStreamer.egg-info/SOURCES.txt
+CameraStreamer.egg-info/top_level.txt
+*.gz
