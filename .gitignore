@@ -35,4 +35,3 @@ LICENSE
 LICENSE
 *.weights
 yolov3.cfg
-coco.names
