@@ -9,6 +9,8 @@ import psutil #to get res usage
 import os
 import numpy as np
 import time
+import pickle
+import struct
 
 #Initialize the Flask app
 app = Flask(__name__)
@@ -31,7 +33,8 @@ logging.debug('COCO Loaded !')
 ln = net.getLayerNames()
 ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
-
+clientsocket=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+#clientsocket.connect(('localhost',8089))
 
 scale_percent = 120#Scale percent to reseize frames
 pid = os.getpid() #Get PID of the program
@@ -101,6 +104,10 @@ def gen_frames():
 
         #YoLo
         frame, result = YOLO(frame, dsize)
+
+        #send frame to socket
+        #data = pickle.dumps(frame)
+        #clientsocket.sendall(struct.pack("L", len(data))+data)
 
         #Put date & time        
         now = datetime.now()
