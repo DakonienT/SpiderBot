@@ -32,7 +32,7 @@ logging.basicConfig(format='%(asctime)s %(message)s')
 logging.root.setLevel(logging.NOTSET)
 logging.basicConfig(level=logging.NOTSET)
 
-camera = cv2.VideoCapture(0)
+
 logging.debug('Loading NN...')
 net = cv2.dnn.readNetFromDarknet('yolov4-tiny.cfg', 'yolov4-tiny.weights')
 net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
@@ -135,7 +135,7 @@ def gen_frames():
         frame = cv2.resize(frame, dsize)
 
         #YoLo
-        frame, result = YOLO(frame, dsize)
+        #frame, result = YOLO(frame, dsize)
 
         #send frame to socket
         #data = pickle.dumps(frame)
