@@ -41,3 +41,4 @@ CameraStreamer.egg-info/requires.txt
 CameraStreamer.egg-info/SOURCES.txt
 CameraStreamer.egg-info/top_level.txt
 *.gz
+CameraStreamer/error.png
