@@ -12,6 +12,19 @@ import time
 import pickle
 import struct
 
+HOST=''
+PORT=8485
+
+s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+print('Socket created')
+
+s.bind((HOST,PORT))
+print('Socket bind complete')
+s.listen(10)
+print('Socket now listening')
+
+conn,addr=s.accept()
+
 #Initialize the Flask app
 app = Flask(__name__)
 
@@ -33,12 +46,11 @@ logging.debug('COCO Loaded !')
 ln = net.getLayerNames()
 ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
-clientsocket=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-#clientsocket.connect(('localhost',8089))
-
 scale_percent = 120#Scale percent to reseize frames
 pid = os.getpid() #Get PID of the program
 logging.debug("PID : %s", str(pid))
+
+
 def getRes():
     CPU = psutil.cpu_percent()
     VMem = dict(psutil.virtual_memory()._asdict())
@@ -85,7 +97,12 @@ def YOLO(frame, dsize):
                 cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
     return frame, boxes
 
-def gen_frames():  
+def gen_frames():
+    
+
+    data = b""
+    payload_size = struct.calcsize(">L")
+    print("payload_size: {}".format(payload_size))  
     global record
     record = False
     # used to record the time when we processed last frame
@@ -94,8 +111,23 @@ def gen_frames():
     # used to record the time at which we processed current frame
     new_frame_time = 0
     while True:
-        success, frame = camera.read()  # read the camera frame
+        success=True   # read the camera frame
+        while len(data) < payload_size:
+            print("Recv: {}".format(len(data)))
+            data += conn.recv(4096)
 
+        print("Done Recv: {}".format(len(data)))
+        packed_msg_size = data[:payload_size]
+        data = data[payload_size:]
+        msg_size = struct.unpack(">L", packed_msg_size)[0]
+        print("msg_size: {}".format(msg_size))
+        while len(data) < msg_size:
+            data += conn.recv(4096)
+        frame_data = data[:msg_size]
+        data = data[msg_size:]
+
+        frame=pickle.loads(frame_data, fix_imports=True, encoding="bytes")
+        frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
         #Resize the frame
         width = int(frame.shape[1] * scale_percent / 100)
         height = int(frame.shape[0] * scale_percent / 100)
