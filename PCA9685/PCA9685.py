@@ -97,3 +97,7 @@ class PCA9685:
     
   def exit_PCA9685(self):
     self.write(self.__MODE2, 0x00)#Please use initialization or __MODE2 =0x04
+
+  def disable(self, channel):
+    self.setPWM(channel, 0, 0)
+    time.sleep(0.005)
