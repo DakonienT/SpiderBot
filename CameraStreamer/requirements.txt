@@ -6,13 +6,12 @@ iotop==0.6
 itsdangerous==2.1.2
 Jinja2==3.1.2
 MarkupSafe==2.1.1
-pip==18.1
+numpy==1.16.2
+psutil==5.9.1
 pycurl==7.43.0.2
 PyGObject==3.30.4
 python-apt==1.8.4.3
-setuptools==63.2.0
 typing-extensions==4.3.0
 unattended-upgrades==0.1
 Werkzeug==2.2.0
-wheel==0.37.1
 zipp==3.8.1
