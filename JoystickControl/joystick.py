@@ -113,6 +113,8 @@ while not done:
         for i in range(axes):
             axis = joystick.get_axis(i)
             textPrint.tprint(screen, "Axis {} value: {:>6.3f}".format(i, axis))
+            if i==1:
+                print("Axis {} value: {:>6.3f}".format(i, axis))
         textPrint.unindent()
 
         buttons = joystick.get_numbuttons()
