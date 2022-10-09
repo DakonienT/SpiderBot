@@ -29,7 +29,16 @@ class TextPrint(object):
 
     def unindent(self):
         self.x -= 10
+def translate(value, leftMin, leftMax, rightMin, rightMax):
+    # Figure out how 'wide' each range is
+    leftSpan = leftMax - leftMin
+    rightSpan = rightMax - rightMin
 
+    # Convert the left range into a 0-1 range (float)
+    valueScaled = float(value - leftMin) / float(leftSpan)
+
+    # Convert the 0-1 range into a value in the right range.
+    return rightMin + (valueScaled * rightSpan)
 
 pygame.init()
 
@@ -113,13 +122,24 @@ while not done:
         for i in range(axes):
             axis = joystick.get_axis(i)
             textPrint.tprint(screen, "Axis {} value: {:>6.3f}".format(i, axis))
-            if i==1:
-                print("Axis {} value: {:>6.3f}".format(i, axis))
+            axis_avarr = joystick.get_axis(1)
+            map_avarr = translate(axis_avarr, -1, 1, 0, 700)
+            print(map_avarr)
+            axis_gd = joystick.get_axis(0)
+            map_gd = translate(axis_gd, -1, 1, 0, 500)
+            pygame.draw.circle(screen, (25,0,243), (map_gd, map_avarr), 10)
+            axis_thr = joystick.get_axis(2)
+            map_thr = translate(axis_thr, -1, 1, 25, 200)
+            pygame.draw.line(screen, (0,255,0), (25, 25), (25, map_thr), width=5)
+
+            #if i==1:
+               #print("Axis {} value: {:>6.3f}".format(i, axis))
         textPrint.unindent()
 
         buttons = joystick.get_numbuttons()
         textPrint.tprint(screen, "Number of buttons: {}".format(buttons))
         textPrint.indent()
+        
 
         for i in range(buttons):
             button = joystick.get_button(i)
@@ -137,6 +157,7 @@ while not done:
             hat = joystick.get_hat(i)
             textPrint.tprint(screen, "Hat {} value: {}".format(i, str(hat)))
         textPrint.unindent()
+        #pygame.draw.rect(screen, (0,0,255), (0,0, 100,100), width=0, border_radius=0, border_top_left_radius=-1, border_top_right_radius=-1, border_bottom_left_radius=-1, border_bottom_right_radius=-1)
 
         textPrint.unindent()
 
