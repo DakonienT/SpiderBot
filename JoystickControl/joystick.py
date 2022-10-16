@@ -129,7 +129,7 @@ while not done:
             textPrint.tprint(screen, "Axis {} value: {:>6.3f}".format(i, axis))
             axis_avarr = joystick.get_axis(1)
             map_avarr = translate(axis_avarr, -1, 1, 0, 700)
-            print(map_avarr)
+            #print(map_avarr)
             axis_gd = joystick.get_axis(0)
             map_gd = translate(axis_gd, -1, 1, 0, 500)
             pygame.draw.circle(screen, (25,0,243), (map_gd, map_avarr), 10)
@@ -160,12 +160,13 @@ while not done:
         # get_axis(). La position est un tuple de valeurs int (x, y).
         for i in range(hats):
             hat = joystick.get_hat(i)
+            print(hat[0])
             textPrint.tprint(screen, "Hat {} value: {}".format(i, str(hat)))
         textPrint.unindent()
         #pygame.draw.rect(screen, (0,0,255), (0,0, 100,100), width=0, border_radius=0, border_top_left_radius=-1, border_top_right_radius=-1, border_bottom_left_radius=-1, border_bottom_right_radius=-1)
 
         textPrint.unindent()
-        msgFromJoystick = "Joystick%"+str(axis_avarr)+"%"+str(axis_gd)+"%"+str(axis_thr)
+        msgFromJoystick = "Joystick%"+str(axis_avarr)+"%"+str(axis_gd)+"%"+str(axis_thr)+"%"+str(hat[0])+"%"+str(hat[1])
         bytesToSend = str.encode(msgFromJoystick)
         UDPClientSocket.sendto(bytesToSend, serverAddressPort)
 
