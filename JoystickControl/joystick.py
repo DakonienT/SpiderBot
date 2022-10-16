@@ -1,5 +1,10 @@
 import pygame
+import socket  #UDP Com
 
+#Setup UDP com with server
+serverAddressPort   = ("127.0.0.1", 20001)
+UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+bufferSize          = 1024
 
 # Définir des couleurs.
 BLACK = pygame.Color('black')
@@ -160,6 +165,9 @@ while not done:
         #pygame.draw.rect(screen, (0,0,255), (0,0, 100,100), width=0, border_radius=0, border_top_left_radius=-1, border_top_right_radius=-1, border_bottom_left_radius=-1, border_bottom_right_radius=-1)
 
         textPrint.unindent()
+        msgFromJoystick = "Joystick%"+str(axis_avarr)+"%"+str(axis_gd)+"%"+str(axis_thr)
+        bytesToSend = str.encode(msgFromJoystick)
+        UDPClientSocket.sendto(bytesToSend, serverAddressPort)
 
     #
     # TOUS LES CODES À DESSINER DOIVENT PASSER AU-DESSUS DE CE COMMENTAIRE
