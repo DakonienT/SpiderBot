@@ -35,8 +35,13 @@ while(True):
     clientMsg = "Message from Client:{}".format(message)
     clientIP  = "Client IP Address:{}".format(address)
     
-    print(clientMsg)
+    #print(clientMsg)
     print(clientIP)
+    splittedMessage = format(message).split("%")
+    print(splittedMessage)
+    if(splittedMessage[0] == "b'Joystick"):
+        hatPos1 = splittedMessage[4]
+        hatPos2 = splittedMessage[5]
 
    
 

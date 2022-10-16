@@ -1,6 +1,7 @@
 import pygame
 import socket  #UDP Com
-
+import pickle
+import cv2
 #Setup UDP com with server
 serverAddressPort   = ("127.0.0.1", 20001)
 UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -9,7 +10,11 @@ bufferSize          = 1024
 # Définir des couleurs.
 BLACK = pygame.Color('black')
 WHITE = pygame.Color('white')
-
+#socket for image
+s=socket.socket(socket.AF_INET , socket.SOCK_DGRAM)
+ip="127.0.0.1"
+port=6666
+s.bind((ip,port))
 
 # Ceci est une classe simple qui nous aidera à imprimer à l'écran.
 # Cela n'a rien à voir avec les joysticks, juste la sortie du
@@ -65,19 +70,29 @@ pygame.joystick.init()
 textPrint = TextPrint()
 
 # -------- Boucle du programme principal -----------
+targetX = 1
+targetY = 0
 while not done:
     #
     # ÉTAPE DE TRAITEMENT DE L'ÉVÉNEMENT
     #
     # Actions possibles du joystick : JOYAXISMOTION, JOYBALLMOTION, JOYBUTTONDOWN,
     # JOYBUTTONUP, JOYHATMOTION
+    x=s.recvfrom(1000000)
+    clientip = x[1][0]
+    data=x[0]
+    #print(data)
+    data=pickle.loads(data)
+    #print(type(data))
+    data = cv2.imdecode(data, cv2.IMREAD_COLOR)
+    
     for event in pygame.event.get(): # L'utilisateur a fait quelque chose.
         if event.type == pygame.QUIT: # Si l'utilisateur a cliqué sur fermer.
             done = True # Signalez que nous avons terminé afin que nous quittions cette boucle.
-        elif event.type == pygame.JOYBUTTONDOWN:
-            print("Joystick button pressed.")
-        elif event.type == pygame.JOYBUTTONUP:
-            print("Joystick button released.")
+        #elif event.type == pygame.JOYBUTTONDOWN:
+            #print("Joystick button pressed.")
+        #elif event.type == pygame.JOYBUTTONUP:
+            #print("Joystick button released.")
 
     #
     # ÉTAPE DESSIN
@@ -93,7 +108,7 @@ while not done:
     textPrint.tprint(screen, "Number of joysticks: {}".format(joystick_count))
     textPrint.indent()
 
-    # Pour chaque joystick :
+    # Pour chaque joystick :\python-opencv-cv2-line-method\
     for i in range(joystick_count):
         joystick = pygame.joystick.Joystick(i)
         joystick.init()
@@ -160,15 +175,34 @@ while not done:
         # get_axis(). La position est un tuple de valeurs int (x, y).
         for i in range(hats):
             hat = joystick.get_hat(i)
-            print(hat[0])
+            #print(hat[0])
             textPrint.tprint(screen, "Hat {} value: {}".format(i, str(hat)))
         textPrint.unindent()
-        #pygame.draw.rect(screen, (0,0,255), (0,0, 100,100), width=0, border_radius=0, border_top_left_radius=-1, border_top_right_radius=-1, border_bottom_left_radius=-1, border_bottom_right_radius=-1)
+        if(0 <= targetX <= data.shape[1] ):
+            targetX = targetX + hat[0] * 5
+        if(targetX <= 0):
+            targetX = 0
+        if(targetX >= data.shape[1]):
+            targetX = data.shape[1]
+        
+        if(0 <= targetY <= data.shape[0] ):
+            targetY =  targetY - hat[1] * 5
+        if(targetY < 0):
+            targetY = 0
+        if(targetY >= data.shape[0]):
+            targetY = data.shape[0]
 
+        print(targetY)
+        #pygame.draw.rect(screen, (0,0,255), (0,0, 100,100), width=0, border_radius=0, border_top_left_radius=-1, border_top_right_radius=-1, border_bottom_left_radius=-1, border_bottom_right_radius=-1)
+        cv2.circle(data, (targetX, targetY), 12, (0,234,0),2)
         textPrint.unindent()
         msgFromJoystick = "Joystick%"+str(axis_avarr)+"%"+str(axis_gd)+"%"+str(axis_thr)+"%"+str(hat[0])+"%"+str(hat[1])
         bytesToSend = str.encode(msgFromJoystick)
         UDPClientSocket.sendto(bytesToSend, serverAddressPort)
+        #print(msgFromJoystick)
+        cv2.imshow('server', data) #to open image
+        if cv2.waitKey(10) == 13:
+            break
 
     #
     # TOUS LES CODES À DESSINER DOIVENT PASSER AU-DESSUS DE CE COMMENTAIRE

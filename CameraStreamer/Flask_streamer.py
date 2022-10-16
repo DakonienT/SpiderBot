@@ -7,14 +7,29 @@ from datetime import datetime
 import socket #to get IP
 import psutil #to get res usage
 import os
+import threading
+import socket
 
+ 
 
+localIP     = "127.0.0.1"
+localPort   = 20001
+bufferSize  = 1024
+# Create a datagram socket
+
+UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+
+# Bind to address and ip
+
+UDPServerSocket.bind((localIP, localPort))
+
+print("Listening UDP on port "+str(localPort))
 #Initialize the Flask app
 app = Flask(__name__)
 camera = cv2.VideoCapture(0)
 scale_percent = 120
 pid = os.getpid() #Get PID of the program
-print(pid)
+#print(pid)
 def getRes():
     CPU = psutil.cpu_percent()
     VMem = dict(psutil.virtual_memory()._asdict())
@@ -25,11 +40,35 @@ def getRes():
     stringRet ="PID : " + str(pid) + "\n"+ "CPU : " + str(CPU) + "\n" + "Virtual Memory : " + str(VMemPercent) + "\n" + "Available mMemory : " + str(AvMem) + "\n" + "Current CPU use for process : " + str(CPUForCurr) + "\n"
     
     return CPU, VMemPercent, AvMem, CPUForCurr
+hat = 0
+def foo():
+        bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+
+        message = bytesAddressPair[0]
+
+        address = bytesAddressPair[1]
+
+        clientMsg = "Message from Client:{}".format(message)
+        clientIP  = "Client IP Address:{}".format(address)
+        print(clientMsg)
+        splittedMessage = format(message).split("%")
+        logging.info(splittedMessage)
+        """ if(splittedMessage[0] == "b'Joystick"):
+            hat = splittedMessage[4]
+            hatPosHB = splittedMessage[5] """
+        threading.Timer(0.1, foo).start()
 
 def gen_frames():  
     global record
     record = False
+    foo()
     while True:
+
+        
+        #print(clientMsg)
+        
+        
+        
         success, frame = camera.read()  # read the camera frame
 
         #Resize the frame
@@ -38,6 +77,7 @@ def gen_frames():
         dsize = (width, height)
         frame = cv2.resize(frame, dsize)
 
+        cv2.putText(frame, str(hat), (10, 300), cv2.FONT_HERSHEY_COMPLEX, 1 ,(255,0,255), 2, cv2.LINE_AA)
         #Put date & time        
         now = datetime.now()
         dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
