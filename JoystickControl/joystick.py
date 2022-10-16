@@ -2,11 +2,16 @@ import pygame
 import socket  #UDP Com
 import pickle
 import cv2
+import logging
+
+logging.basicConfig(format='%(asctime)s %(message)s')
+logging.root.setLevel(logging.NOTSET)
+logging.basicConfig(level=logging.NOTSET)
 #Setup UDP com with server
 serverAddressPort   = ("127.0.0.1", 20001)
 UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 bufferSize          = 1024
-
+logging.info("Emitting on UDP for Joystick on " + str(serverAddressPort[0]) + ":" + str(serverAddressPort[1]))
 # Définir des couleurs.
 BLACK = pygame.Color('black')
 WHITE = pygame.Color('white')
@@ -15,7 +20,7 @@ s=socket.socket(socket.AF_INET , socket.SOCK_DGRAM)
 ip="127.0.0.1"
 port=6666
 s.bind((ip,port))
-
+logging.info("Listening UDP fof image on " + str(ip) + ":" + str(port))
 # Ceci est une classe simple qui nous aidera à imprimer à l'écran.
 # Cela n'a rien à voir avec les joysticks, juste la sortie du
 # information.
