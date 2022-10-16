@@ -3,6 +3,7 @@ import socket  #UDP Com
 import pickle
 import cv2
 import logging
+import numpy as np
 
 logging.basicConfig(format='%(asctime)s %(message)s')
 logging.root.setLevel(logging.NOTSET)
@@ -21,9 +22,61 @@ ip="127.0.0.1"
 port=6666
 s.bind((ip,port))
 logging.info("Listening UDP fof image on " + str(ip) + ":" + str(port))
+
+logging.debug('Loading NN...')
+net = cv2.dnn.readNetFromDarknet(r'C:\Users\simon\Desktop\VMShared\SpiderBot\JoystickControl\yolov3.cfg', r'C:\Users\simon\Desktop\VMShared\SpiderBot\JoystickControl\yolov3.weights')
+net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+logging.debug('NN Loaded !')
+logging.debug('Loading COCO...')
+classes = open(r'C:\Users\simon\Desktop\VMShared\SpiderBot\JoystickControl\coco.names').read().strip().split('\n')
+np.random.seed(42)
+colors = np.random.randint(0, 255, size=(len(classes), 3), dtype='uint8')
+logging.debug('COCO Loaded !')
+
+ln = net.getLayerNames()
+ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+
+
+def YOLO(frame, dsize):
+    blob = cv2.dnn.blobFromImage(frame, 1/255.0, dsize, swapRB=True, crop=False)
+    r = blob[0, 0, :, :]
+    net.setInput(blob)
+    outputs = net.forward(ln)
+    boxes = []
+    confidences = []
+    classIDs = []
+    h, w = frame.shape[:2]
+    for output in outputs:
+        for detection in output:
+            scores = detection[5:]
+            classID = np.argmax(scores)
+            confidence = scores[classID]
+            if confidence > 0.1:
+                box = detection[:4] * np.array([w, h, w, h])
+                (centerX, centerY, width, height) = box.astype("int")
+                x = int(centerX - (width / 2))
+                y = int(centerY - (height / 2))
+                box = [x, y, int(width), int(height)]
+                boxes.append(box)
+                confidences.append(float(confidence))
+                classIDs.append(classID)
+    indices = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
+    if len(indices) > 0:
+        for i in indices.flatten():
+            (x, y) = (boxes[i][0], boxes[i][1])
+            (w, h) = (boxes[i][2], boxes[i][3])
+            color = (0,0,255)
+            if (classes[classIDs[i]] == 'person'):
+                cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+                text = "{}: {:.4f}".format(classes[classIDs[i]], confidences[i])
+                cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+    return frame, boxes
+
 # Ceci est une classe simple qui nous aidera à imprimer à l'écran.
 # Cela n'a rien à voir avec les joysticks, juste la sortie du
 # information.
+
+
 class TextPrint(object):
     def __init__(self):
         self.reset()
@@ -249,8 +302,11 @@ while not done:
         bytesToSend = str.encode(msgFromJoystick)
         UDPClientSocket.sendto(bytesToSend, serverAddressPort)
         #print(msgFromJoystick)
+        #Run YOLO
+        dsize = (data.shape[0], data.shape[1])
+        frame, result = YOLO(data, dsize)
         img_desired_width_pg = 500-40
-        resized = image_resize(data, img_desired_width_pg)
+        resized = image_resize(frame, img_desired_width_pg)
         pygame_image = convert_opencv_img_to_pygame(resized)
         screen.blit(pygame_image, (20,700-resized.shape[1]+90))
         """cv2.imshow('server', data) #to open image
