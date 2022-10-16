@@ -50,6 +50,50 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
     # Convert the 0-1 range into a value in the right range.
     return rightMin + (valueScaled * rightSpan)
 
+def get_opencv_img_res(opencv_image):
+    height, width = opencv_image.shape[:2]
+    return width, height
+def convert_opencv_img_to_pygame(opencv_image):
+    """
+Convert OpenCV images for Pygame.
+
+    see https://blanktar.jp/blog/2016/01/pygame-draw-opencv-image.html
+    """
+    opencv_image = opencv_image[:,:,::-1]  #Since OpenCV is BGR and pygame is RGB, it is necessary to convert it.
+    shape = opencv_image.shape[1::-1]  #OpenCV(height,width,Number of colors), Pygame(width, height)So this is also converted.
+    pygame_image = pygame.image.frombuffer(opencv_image.tostring(), shape, 'RGB')
+
+    return pygame_image
+def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
+    # initialize the dimensions of the image to be resized and
+    # grab the image size
+    dim = None
+    (h, w) = image.shape[:2]
+
+    # if both the width and height are None, then return the
+    # original image
+    if width is None and height is None:
+        return image
+
+    # check to see if the width is None
+    if width is None:
+        # calculate the ratio of the height and construct the
+        # dimensions
+        r = height / float(h)
+        dim = (int(w * r), height)
+
+    # otherwise, the height is None
+    else:
+        # calculate the ratio of the width and construct the
+        # dimensions
+        r = width / float(w)
+        dim = (width, int(h * r))
+
+    # resize the image
+    resized = cv2.resize(image, dim, interpolation = inter)
+
+    # return the resized image
+    return resized
 pygame.init()
 
 # Définissez la largeur et la hauteur de l'écran (largeur, hauteur).
@@ -192,17 +236,21 @@ while not done:
         if(targetY >= data.shape[0]):
             targetY = data.shape[0]
 
-        print(targetY)
+        targetPosition = (targetX, targetY)
         #pygame.draw.rect(screen, (0,0,255), (0,0, 100,100), width=0, border_radius=0, border_top_left_radius=-1, border_top_right_radius=-1, border_bottom_left_radius=-1, border_bottom_right_radius=-1)
-        cv2.circle(data, (targetX, targetY), 12, (0,234,0),2)
+        cv2.circle(data, targetPosition, 12, (0,234,0),2)
         textPrint.unindent()
         msgFromJoystick = "Joystick%"+str(axis_avarr)+"%"+str(axis_gd)+"%"+str(axis_thr)+"%"+str(hat[0])+"%"+str(hat[1])
         bytesToSend = str.encode(msgFromJoystick)
         UDPClientSocket.sendto(bytesToSend, serverAddressPort)
         #print(msgFromJoystick)
-        cv2.imshow('server', data) #to open image
+        img_desired_width_pg = 500-40
+        resized = image_resize(data, img_desired_width_pg)
+        pygame_image = convert_opencv_img_to_pygame(resized)
+        screen.blit(pygame_image, (20,700-resized.shape[1]+90))
+        """cv2.imshow('server', data) #to open image
         if cv2.waitKey(10) == 13:
-            break
+            break"""
 
     #
     # TOUS LES CODES À DESSINER DOIVENT PASSER AU-DESSUS DE CE COMMENTAIRE
