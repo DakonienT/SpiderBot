@@ -324,17 +324,18 @@ while not done:
         if(targetY >= data.shape[0]):
             targetY = data.shape[0]
 
+        frame = YOLO(data)
         targetPosition = (targetX, targetY)
         #pygame.draw.rect(screen, (0,0,255), (0,0, 100,100), width=0, border_radius=0, border_top_left_radius=-1, border_top_right_radius=-1, border_bottom_left_radius=-1, border_bottom_right_radius=-1)
-        cv2.circle(data, targetPosition, 12, (0,234,0),2)
+        cv2.circle(frame, targetPosition, 12, (0,234,0),2)
         textPrint.unindent()
         msgFromJoystick = "Joystick%"+str(axis_avarr)+"%"+str(axis_gd)+"%"+str(axis_thr)+"%"+str(hat[0])+"%"+str(hat[1])
         bytesToSend = str.encode(msgFromJoystick)
         UDPClientSocket.sendto(bytesToSend, serverAddressPort)
         #print(msgFromJoystick)
         #Run YOLO
-        dsize = (data.shape[0], data.shape[1])
-        frame = YOLO(data)
+        #dsize = (data.shape[0], data.shape[1])
+        
         img_desired_width_pg = 500-40
         resized = image_resize(frame, img_desired_width_pg)
         pygame_image = convert_opencv_img_to_pygame(resized)
