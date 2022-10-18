@@ -4,6 +4,12 @@ import pickle
 import cv2
 import logging
 import numpy as np
+import time
+
+CONFIDENCE_THRESHOLD = 0.2
+NMS_THRESHOLD = 0.4
+COLORS = [(0, 255, 255), (255, 255, 0), (0, 255, 0), (255, 0, 0)]
+ 
 
 logging.basicConfig(format='%(asctime)s %(message)s')
 logging.root.setLevel(logging.NOTSET)
@@ -24,22 +30,30 @@ s.bind((ip,port))
 logging.info("Listening UDP fof image on " + str(ip) + ":" + str(port))
 
 logging.debug('Loading NN...')
-net = cv2.dnn.readNetFromDarknet(r'C:\Users\simon\Desktop\VMShared\SpiderBot\JoystickControl\yolov3.cfg', r'C:\Users\simon\Desktop\VMShared\SpiderBot\JoystickControl\yolov3.weights')
+net = cv2.dnn.readNet(r"C:\Users\simon\Desktop\VMShared\SpiderBot\JoystickControl\yolov3.weights",r"C:\Users\simon\Desktop\VMShared\SpiderBot\JoystickControl\yolov3.cfg")
 net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+model = cv2.dnn_DetectionModel(net)
+model.setInputParams(size=(416, 416), scale=1/255, swapRB=True)
+#net = cv2.dnn.readNetFromDarknet(r'C:\Users\simon\Desktop\VMShared\SpiderBot\JoystickControl\yolov3.cfg', r'C:\Users\simon\Desktop\VMShared\SpiderBot\JoystickControl\yolov3.weights')
+#net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+#net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 logging.debug('NN Loaded !')
 logging.debug('Loading COCO...')
-classes = open(r'C:\Users\simon\Desktop\VMShared\SpiderBot\JoystickControl\coco.names').read().strip().split('\n')
-np.random.seed(42)
-colors = np.random.randint(0, 255, size=(len(classes), 3), dtype='uint8')
+class_names = []
+with open(r"C:\Users\simon\Desktop\VMShared\SpiderBot\JoystickControl\coco.names", "r") as f:
+    class_names = [cname.strip() for cname in f.readlines()]
+#classes = open(r'C:\Users\simon\Desktop\VMShared\SpiderBot\JoystickControl\coco.names').read().strip().split('\n')
+#np.random.seed(42)
+#colors = np.random.randint(0, 255, size=(len(classes), 3), dtype='uint8')
 logging.debug('COCO Loaded !')
 
-ln = net.getLayerNames()
-print(net.getUnconnectedOutLayers())
-ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+#ln = net.getLayerNames()
+#print(net.getUnconnectedOutLayers())
+#ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
 
-def YOLO(frame, dsize):
+"""def YOLO(frame, dsize):
     blob = cv2.dnn.blobFromImage(frame, 1/255.0, dsize, swapRB=True, crop=False)
     r = blob[0, 0, :, :]
     net.setInput(blob)
@@ -72,7 +86,21 @@ def YOLO(frame, dsize):
                 cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
                 text = "{}: {:.4f}".format(classes[classIDs[i]], confidences[i])
                 cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
-    return frame, boxes
+    return frame, boxes"""
+def YOLO(frame):
+    start = time.time()
+    classes, scores, boxes = model.detect(frame, CONFIDENCE_THRESHOLD, NMS_THRESHOLD)
+    end = time.time()
+    for (classid, score, box) in zip(classes, scores, boxes):
+        color = COLORS[int(classid) % len(COLORS)]
+        label = "%s : %f" % (class_names[classid], score)
+        #label = class_names[classid[0]]
+        print(classid)
+        cv2.rectangle(frame, box, color, 2)
+        cv2.putText(frame, label, (box[0], box[1]-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+    fps = "FPS: %.2f " % (1 / (end - start))
+    cv2.putText(frame, fps, (0, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 2)
+    return frame
 
 # Ceci est une classe simple qui nous aidera à imprimer à l'écran.
 # Cela n'a rien à voir avec les joysticks, juste la sortie du
@@ -306,7 +334,7 @@ while not done:
         #print(msgFromJoystick)
         #Run YOLO
         dsize = (data.shape[0], data.shape[1])
-        frame, result = YOLO(data, dsize)
+        frame = YOLO(data)
         img_desired_width_pg = 500-40
         resized = image_resize(frame, img_desired_width_pg)
         pygame_image = convert_opencv_img_to_pygame(resized)
