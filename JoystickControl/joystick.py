@@ -25,7 +25,8 @@ logging.info("Listening UDP fof image on " + str(ip) + ":" + str(port))
 
 logging.debug('Loading NN...')
 net = cv2.dnn.readNetFromDarknet(r'C:\Users\simon\Desktop\VMShared\SpiderBot\JoystickControl\yolov3.cfg', r'C:\Users\simon\Desktop\VMShared\SpiderBot\JoystickControl\yolov3.weights')
-net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 logging.debug('NN Loaded !')
 logging.debug('Loading COCO...')
 classes = open(r'C:\Users\simon\Desktop\VMShared\SpiderBot\JoystickControl\coco.names').read().strip().split('\n')
@@ -34,6 +35,7 @@ colors = np.random.randint(0, 255, size=(len(classes), 3), dtype='uint8')
 logging.debug('COCO Loaded !')
 
 ln = net.getLayerNames()
+print(net.getUnconnectedOutLayers())
 ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
 
