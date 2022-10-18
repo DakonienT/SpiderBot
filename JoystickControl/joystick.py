@@ -6,7 +6,7 @@ import logging
 import numpy as np
 import time
 
-CONFIDENCE_THRESHOLD = 0.2
+CONFIDENCE_THRESHOLD = 0.7
 NMS_THRESHOLD = 0.4
 COLORS = [(0, 255, 255), (255, 255, 0), (0, 255, 0), (255, 0, 0)]
  
@@ -88,6 +88,7 @@ logging.debug('COCO Loaded !')
                 cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
     return frame, boxes"""
 def YOLO(frame):
+    boxes_return = []
     start = time.time()
     classes, scores, boxes = model.detect(frame, CONFIDENCE_THRESHOLD, NMS_THRESHOLD)
     end = time.time()
@@ -96,11 +97,13 @@ def YOLO(frame):
         label = "%s : %f" % (class_names[classid], score)
         #label = class_names[classid[0]]
         #print(classid)
+        boxes_return.append(box)
         cv2.rectangle(frame, box, color, 2)
+        #print(box)
         cv2.putText(frame, label, (box[0], box[1]-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
     fps = "FPS: %.2f " % (1 / (end - start))
     #cv2.putText(frame, fps, (0, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 2)
-    return frame, fps
+    return frame, fps, boxes_return
 
 # Ceci est une classe simple qui nous aidera à imprimer à l'écran.
 # Cela n'a rien à voir avec les joysticks, juste la sortie du
@@ -324,9 +327,12 @@ while not done:
         if(targetY >= data.shape[0]):
             targetY = data.shape[0]
 
-        frame, fps = YOLO(data)
+        frame, fps, boxes = YOLO(data)
+        #print(boxes)
         textPrint.tprint(screen, fps)
+        textPrint.tprint(screen, str(len(boxes)) + " objects detected")
         targetPosition = (targetX, targetY)
+        textPrint.tprint(screen, "Cursor position: "+ str(targetPosition))
         #pygame.draw.rect(screen, (0,0,255), (0,0, 100,100), width=0, border_radius=0, border_top_left_radius=-1, border_top_right_radius=-1, border_bottom_left_radius=-1, border_bottom_right_radius=-1)
         cv2.circle(frame, targetPosition, 12, (0,234,0),2)
         textPrint.unindent()
@@ -336,11 +342,23 @@ while not done:
         #print(msgFromJoystick)
         #Run YOLO
         #dsize = (data.shape[0], data.shape[1])
-        
+        #boxes = np.array(boxes)[np.indices.astype(int)]
+        for i in range(0,len(boxes)) :
+            box = boxes[i]
+            x_box_TL = box[0]
+            y_box_TL = box[1]
+            x_box_BR = box[2]
+            y_box_BR = box[3]
+            xlist = np.arange(x_box_TL, x_box_BR)
+            ylist = np.arange(y_box_TL, y_box_BR)
+            print(ylist)
+            if(targetX in xlist and targetY in ylist):
+                print("!!!!!!!!!!!!!!!!!!!!") 
+
         img_desired_width_pg = 500-40
         resized = image_resize(frame, img_desired_width_pg)
         pygame_image = convert_opencv_img_to_pygame(resized)
-        screen.blit(pygame_image, (20,700-resized.shape[1]+90))
+        screen.blit(pygame_image, (20,700-resized.shape[1]+110))
         """cv2.imshow('server', data) #to open image
         if cv2.waitKey(10) == 13:
             break"""
