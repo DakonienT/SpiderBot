@@ -99,8 +99,8 @@ def YOLO(frame):
         cv2.rectangle(frame, box, color, 2)
         cv2.putText(frame, label, (box[0], box[1]-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
     fps = "FPS: %.2f " % (1 / (end - start))
-    cv2.putText(frame, fps, (0, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 2)
-    return frame
+    #cv2.putText(frame, fps, (0, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 2)
+    return frame, fps
 
 # Ceci est une classe simple qui nous aidera à imprimer à l'écran.
 # Cela n'a rien à voir avec les joysticks, juste la sortie du
@@ -324,7 +324,8 @@ while not done:
         if(targetY >= data.shape[0]):
             targetY = data.shape[0]
 
-        frame = YOLO(data)
+        frame, fps = YOLO(data)
+        textPrint.tprint(screen, fps)
         targetPosition = (targetX, targetY)
         #pygame.draw.rect(screen, (0,0,255), (0,0, 100,100), width=0, border_radius=0, border_top_left_radius=-1, border_top_right_radius=-1, border_bottom_left_radius=-1, border_bottom_right_radius=-1)
         cv2.circle(frame, targetPosition, 12, (0,234,0),2)
