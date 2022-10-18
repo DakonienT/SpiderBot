@@ -95,7 +95,7 @@ def YOLO(frame):
         color = COLORS[int(classid) % len(COLORS)]
         label = "%s : %f" % (class_names[classid], score)
         #label = class_names[classid[0]]
-        print(classid)
+        #print(classid)
         cv2.rectangle(frame, box, color, 2)
         cv2.putText(frame, label, (box[0], box[1]-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
     fps = "FPS: %.2f " % (1 / (end - start))
