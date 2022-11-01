@@ -220,7 +220,7 @@ def rounded_rectangle (src, top_left, bottom_right, radius=1, color=255, thickne
 
     return src
 
-def drawControl(avarr, gd, thr):
+def drawControl(avarr, gd, thr, yaw):
     pixel_array = np.full((120, 120, 3), (255,255,255), dtype=np.uint8)
     rounded = rounded_rectangle(pixel_array, (0,0), (120, 120), 0.3,color=(0,0,0), thickness = -1)
     cv2.line(rounded, (60, 0), (60, 120), (0, 255, 0), 1)
@@ -228,11 +228,13 @@ def drawControl(avarr, gd, thr):
     map_avarr = translate(avarr, -1, 1, 0, 120)
     map_gd = translate(gd, -1, 1, 0, 120)
     map_thr = translate(thr, -1, 1, 70, 110)
+    map_yaw = int(translate(yaw, -1, 1, 22, 98))
     logging.info("map_avarr : " + str(map_avarr))
     logging.info("map_gd : " + str(map_gd))
     cv2.line(rounded, (10, 110), (10, int(map_thr)), (255, 0, 0), 2)
     cv2.circle(rounded, (int(map_gd), int(map_avarr)), 6, (0,200,0),1)
-
+    cv2.line(rounded, (20, 110), (100, 110), (0, 255, 0), 1)
+    cv2.line(rounded, (map_yaw, 105), (map_yaw, 115), (0, 0, 255), 1)    
     return rounded
     
 pygame.init()
@@ -333,7 +335,7 @@ while not done:
             #print(map_avarr)
             axis_gd = joystick.get_axis(0)
 
-            
+            axis_yaw = joystick.get_axis(3)
             axis_thr = joystick.get_axis(2)
             #map_thr = translate(axis_thr, -1, 1, 25, 200)
             #pygame.draw.line(screen, (0,255,0), (25, 25), (25, map_thr), width=5)
@@ -413,7 +415,7 @@ while not done:
         img_desired_width_pg = 500-40
         resized = image_resize(frame, img_desired_width_pg)
         pygame_image = convert_opencv_img_to_pygame(resized)
-        control_image = convert_opencv_img_to_pygame(drawControl(axis_avarr, axis_gd, axis_thr))
+        control_image = convert_opencv_img_to_pygame(drawControl(axis_avarr, axis_gd, axis_thr, axis_yaw))
         screen.blit(pygame_image, (20,700-resized.shape[1]+110))
         screen.blit (control_image, (300, (700-resized.shape[1]+110)/2 - 60))
         """cv2.imshow('server', data) #to open image
