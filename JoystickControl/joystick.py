@@ -52,6 +52,7 @@ logging.debug('COCO Loaded !')
 #print(net.getUnconnectedOutLayers())
 #ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 class detection : 
+    
     def YOLO(self, frame, target):
         boxes_return = []
         start = time.time()
@@ -236,7 +237,12 @@ def drawControl(avarr, gd, thr, yaw):
     cv2.line(rounded, (20, 110), (100, 110), (0, 255, 0), 1)
     cv2.line(rounded, (map_yaw, 105), (map_yaw, 115), (0, 0, 255), 1)    
     return rounded
+
+pointerColor = (0, 255, 0) # default color for pointer
+
+
     
+
 pygame.init()
 
 # Définissez la largeur et la hauteur de l'écran (largeur, hauteur).
@@ -260,6 +266,8 @@ textPrint = TextPrint()
 targetX = 1
 targetY = 0
 det = detection()
+button1state = 0 #For rising edge detection
+lastButton1state = 0
 while not done:
     #
     # ÉTAPE DE TRAITEMENT DE L'ÉVÉNEMENT
@@ -374,13 +382,29 @@ while not done:
         if(targetY >= data.shape[0]):
             targetY = data.shape[0]
         
+        #Code for rising edge detection on BT 1
+        #button1Read = joystick.get_button(0)
+        button1state = joystick.get_button(0)
+        if(button1state != lastButton1state):
+            if(button1state == 1):
+                logging.debug("button 1 pressed")
+                #updatePointercolor()
+                if (pointerColor == (0, 255, 0)):
+                    pointerColor = (0, 0, 255)
+                else:
+                    pointerColor = (0, 255, 0)
+            else:
+                logging.debug("Button 1 released")
+        lastButton1state = button1state
+
+
         targetPosition = (targetX, targetY)
         frame, fps, boxes = det.YOLO(data, targetPosition)
         textPrint.tprint(screen, fps)
         textPrint.tprint(screen, str(len(boxes)) + " objects detected")
         
         textPrint.tprint(screen, "Cursor position: "+ str(targetPosition))
-        cv2.circle(frame, targetPosition, 12, (0,234,0),2)
+        cv2.circle(frame, targetPosition, 12, pointerColor,2)
         textPrint.unindent()
         msgFromJoystick = "Joystick%"+str(axis_avarr)+"%"+str(axis_gd)+"%"+str(axis_thr)+"%"+str(hat[0])+"%"+str(hat[1])
         bytesToSend = str.encode(msgFromJoystick)
