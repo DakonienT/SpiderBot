@@ -51,38 +51,38 @@ logging.debug('COCO Loaded !')
 #ln = net.getLayerNames()
 #print(net.getUnconnectedOutLayers())
 #ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-
-def YOLO(frame, target):
-    boxes_return = []
-    start = time.time()
-    classes, scores, boxes = model.detect(frame, CONFIDENCE_THRESHOLD, NMS_THRESHOLD)
-    end = time.time()
-    for (classid, score, box) in zip(classes, scores, boxes):
-        color = COLORS[int(classid) % len(COLORS)]
-        label = "%s : %f" % (class_names[classid], score)
-        #label = class_names[classid[0]]
-        #print(classid)
-        #boxes_return.append(box)
-        #if(class_names[classid] == "person"):
-        print(box)
-        cv2.rectangle(frame, box, (255,134, 56), 2)
-        x_box_TL = box[0]
-        y_box_TL = box[1]
-        x_box_BR = box[2]
-        y_box_BR = box[3]
-        xlist = np.arange(x_box_TL, x_box_BR)
-        ylist = np.arange(y_box_TL, y_box_BR)
-        #print(ylist)
-        
-        if(targetX in xlist and targetY in ylist):
-            print("!!!!!!!!!!!!!!!!!!!!")
-        #print(box)
-        #if(target[0] in np.arange(box[0], ))
-        
-            cv2.putText(frame, label, (box[0], box[1]-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-    fps = "FPS: %.2f " % (1 / (end - start))
-    #cv2.putText(frame, fps, (0, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 2)
-    return frame, fps, boxes_return
+class detection : 
+    def YOLO(self, frame, target):
+        boxes_return = []
+        start = time.time()
+        classes, scores, boxes = model.detect(frame, CONFIDENCE_THRESHOLD, NMS_THRESHOLD)
+        end = time.time()
+        for (classid, score, box) in zip(classes, scores, boxes):
+            color = COLORS[int(classid) % len(COLORS)]
+            label = "%s : %f" % (class_names[classid], score)
+            #label = class_names[classid[0]]
+            #print(classid)
+            #boxes_return.append(box)
+            #if(class_names[classid] == "person"):
+            print(box)
+            cv2.rectangle(frame, box, (255,134, 56), 2)
+            x_box_TL = box[0]
+            y_box_TL = box[1]
+            x_box_BR = box[2]
+            y_box_BR = box[3]
+            xlist = np.arange(x_box_TL, x_box_BR)
+            ylist = np.arange(y_box_TL, y_box_BR)
+            #print(ylist)
+            
+            if(targetX in xlist and targetY in ylist):
+                print("!!!!!!!!!!!!!!!!!!!!")
+            #print(box)
+            #if(target[0] in np.arange(box[0], ))
+            
+                cv2.putText(frame, label, (box[0], box[1]-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        fps = "FPS: %.2f " % (1 / (end - start))
+        #cv2.putText(frame, fps, (0, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 2)
+        return frame, fps, boxes_return
 
 # Ceci est une classe simple qui nous aidera à imprimer à l'écran.
 # Cela n'a rien à voir avec les joysticks, juste la sortie du
@@ -186,6 +186,7 @@ textPrint = TextPrint()
 # -------- Boucle du programme principal -----------
 targetX = 1
 targetY = 0
+det = detection()
 while not done:
     #
     # ÉTAPE DE TRAITEMENT DE L'ÉVÉNEMENT
@@ -307,7 +308,7 @@ while not done:
             targetY = data.shape[0]
         
         targetPosition = (targetX, targetY)
-        frame, fps, boxes = YOLO(data, targetPosition)
+        frame, fps, boxes = det.YOLO(data, targetPosition)
         #print(boxes)
         textPrint.tprint(screen, fps)
         textPrint.tprint(screen, str(len(boxes)) + " objects detected")
