@@ -64,7 +64,7 @@ class detection :
             #print(classid)
             #boxes_return.append(box)
             #if(class_names[classid] == "person"):
-            print(box)
+            #print(box)
             cv2.rectangle(frame, box, (255,134, 56), 2)
             x_box_TL = box[0]
             y_box_TL = box[1]
@@ -219,14 +219,19 @@ def rounded_rectangle (src, top_left, bottom_right, radius=1, color=255, thickne
     cv2.ellipse(src, (p4[0] + corner_radius, p4[1] - corner_radius), (corner_radius, corner_radius), 90.0, 0, 90,  color , thickness, line_type)
 
     return src
-def drawControl(avarr, gd):
+
+def drawControl(avarr, gd, thr):
     pixel_array = np.full((120, 120, 3), (255,255,255), dtype=np.uint8)
     rounded = rounded_rectangle(pixel_array, (0,0), (120, 120), 0.3,color=(0,0,0), thickness = -1)
     cv2.line(rounded, (60, 0), (60, 120), (0, 255, 0), 1)
     cv2.line(rounded, (0, 60), (120, 60), (0, 255, 0), 1)
     map_avarr = translate(avarr, -1, 1, 0, 120)
     map_gd = translate(gd, -1, 1, 0, 120)
-    cv2.circle(rounded, (0, 0), 12, (0,200,0),2)
+    map_thr = translate(thr, -1, 1, 70, 110)
+    logging.info("map_avarr : " + str(map_avarr))
+    logging.info("map_gd : " + str(map_gd))
+    cv2.line(rounded, (10, 110), (10, int(map_thr)), (255, 0, 0), 2)
+    cv2.circle(rounded, (int(map_gd), int(map_avarr)), 6, (0,200,0),1)
 
     return rounded
     
@@ -324,15 +329,14 @@ while not done:
             axis = joystick.get_axis(i)
             textPrint.tprint(screen, "Axis {} value: {:>6.3f}".format(i, axis))
             axis_avarr = joystick.get_axis(1)
-            map_avarr = translate(axis_avarr, -1, 1, 0, 700)
+         
             #print(map_avarr)
             axis_gd = joystick.get_axis(0)
-            map_gd = translate(axis_gd, -1, 1, 0, 500)
-            #pygame.draw.circle(screen, (25,0,243), (map_gd, map_avarr), 10)
+
             
             axis_thr = joystick.get_axis(2)
-            map_thr = translate(axis_thr, -1, 1, 25, 200)
-            pygame.draw.line(screen, (0,255,0), (25, 25), (25, map_thr), width=5)
+            #map_thr = translate(axis_thr, -1, 1, 25, 200)
+            #pygame.draw.line(screen, (0,255,0), (25, 25), (25, map_thr), width=5)
 
             #if i==1:
                #print("Axis {} value: {:>6.3f}".format(i, axis))
@@ -409,7 +413,7 @@ while not done:
         img_desired_width_pg = 500-40
         resized = image_resize(frame, img_desired_width_pg)
         pygame_image = convert_opencv_img_to_pygame(resized)
-        control_image = convert_opencv_img_to_pygame(drawControl(axis_avarr, axis_gd))
+        control_image = convert_opencv_img_to_pygame(drawControl(axis_avarr, axis_gd, axis_thr))
         screen.blit(pygame_image, (20,700-resized.shape[1]+110))
         screen.blit (control_image, (300, (700-resized.shape[1]+110)/2 - 60))
         """cv2.imshow('server', data) #to open image
