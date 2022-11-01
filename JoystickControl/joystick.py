@@ -164,6 +164,11 @@ def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
 
     # return the resized image
     return resized
+
+def drawControl():
+    pixel_array = np.full((120, 120, 3), (0,0,0), dtype=np.uint8)
+    return pixel_array
+
 pygame.init()
 
 # Définissez la largeur et la hauteur de l'écran (largeur, hauteur).
@@ -342,7 +347,9 @@ while not done:
         img_desired_width_pg = 500-40
         resized = image_resize(frame, img_desired_width_pg)
         pygame_image = convert_opencv_img_to_pygame(resized)
+        control_image = convert_opencv_img_to_pygame(drawControl())
         screen.blit(pygame_image, (20,700-resized.shape[1]+110))
+        screen.blit (control_image, (300, (700-resized.shape[1]+110)/2 - 60))
         """cv2.imshow('server', data) #to open image
         if cv2.waitKey(10) == 13:
             break"""
