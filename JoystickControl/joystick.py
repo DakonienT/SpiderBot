@@ -332,16 +332,10 @@ while not done:
             textPrint.tprint(screen, "Axis {} value: {:>6.3f}".format(i, axis))
             axis_avarr = joystick.get_axis(1)
          
-            #print(map_avarr)
             axis_gd = joystick.get_axis(0)
-
             axis_yaw = joystick.get_axis(3)
             axis_thr = joystick.get_axis(2)
-            #map_thr = translate(axis_thr, -1, 1, 25, 200)
-            #pygame.draw.line(screen, (0,255,0), (25, 25), (25, map_thr), width=5)
 
-            #if i==1:
-               #print("Axis {} value: {:>6.3f}".format(i, axis))
         textPrint.unindent()
 
         buttons = joystick.get_numbuttons()
@@ -382,35 +376,16 @@ while not done:
         
         targetPosition = (targetX, targetY)
         frame, fps, boxes = det.YOLO(data, targetPosition)
-        #print(boxes)
         textPrint.tprint(screen, fps)
         textPrint.tprint(screen, str(len(boxes)) + " objects detected")
         
         textPrint.tprint(screen, "Cursor position: "+ str(targetPosition))
-        #pygame.draw.rect(screen, (0,0,255), (0,0, 100,100), width=0, border_radius=0, border_top_left_radius=-1, border_top_right_radius=-1, border_bottom_left_radius=-1, border_bottom_right_radius=-1)
         cv2.circle(frame, targetPosition, 12, (0,234,0),2)
         textPrint.unindent()
         msgFromJoystick = "Joystick%"+str(axis_avarr)+"%"+str(axis_gd)+"%"+str(axis_thr)+"%"+str(hat[0])+"%"+str(hat[1])
         bytesToSend = str.encode(msgFromJoystick)
         UDPClientSocket.sendto(bytesToSend, serverAddressPort)
-        #print(msgFromJoystick)
-        #Run YOLO
-        #dsize = (data.shape[0], data.shape[1])
-        #boxes = np.array(boxes)[np.indices.astype(int)]
-        """for i in range(0,len(boxes)) :
-            box = boxes[i]
-            x_box_TL = box[0]
-            y_box_TL = box[1]
-            x_box_BR = box[2]
-            y_box_BR = box[3]
-            xlist = np.arange(x_box_TL, x_box_BR)
-            ylist = np.arange(y_box_TL, y_box_BR)
-            print(ylist)
-            
-            if(targetX in xlist and targetY in ylist):
-                print("!!!!!!!!!!!!!!!!!!!!")"""
-            #else:
-                #print("OOOOOOOO") 
+
 
         img_desired_width_pg = 500-40
         resized = image_resize(frame, img_desired_width_pg)
@@ -418,10 +393,6 @@ while not done:
         control_image = convert_opencv_img_to_pygame(drawControl(axis_avarr, axis_gd, axis_thr, axis_yaw))
         screen.blit(pygame_image, (20,700-resized.shape[1]+110))
         screen.blit (control_image, (300, (700-resized.shape[1]+110)/2 - 60))
-        """cv2.imshow('server', data) #to open image
-        if cv2.waitKey(10) == 13:
-            break"""
-
     #
     # TOUS LES CODES À DESSINER DOIVENT PASSER AU-DESSUS DE CE COMMENTAIRE
     #
