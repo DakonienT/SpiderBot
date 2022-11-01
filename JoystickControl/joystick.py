@@ -6,7 +6,7 @@ import logging
 import numpy as np
 import time
 from PIL import Image, ImageDraw
-CONFIDENCE_THRESHOLD = 0.4
+CONFIDENCE_THRESHOLD = 0.1
 NMS_THRESHOLD = 0.4
 COLORS = [(0, 255, 255), (255, 255, 0), (0, 255, 0), (255, 0, 0)]
  
@@ -52,7 +52,7 @@ logging.debug('COCO Loaded !')
 #print(net.getUnconnectedOutLayers())
 #ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 class detection : 
-    
+    pointerIsInBox = False
     def YOLO(self, frame, target):
         boxes_return = []
         start = time.time()
@@ -76,11 +76,15 @@ class detection :
             #print(ylist)
             
             if(targetX in xlist and targetY in ylist):
-                print("!!!!!!!!!!!!!!!!!!!!")
+                #print("!!!!!!!!!!!!!!!!!!!!")
+                self.pointerIsInBox = True
             #print(box)
             #if(target[0] in np.arange(box[0], ))
             
                 cv2.putText(frame, label, (box[0], box[1]-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+            else:
+                self.pointerIsInBox = False
+            logging.info("Is in box in class : " + str(self.pointerIsInBox))
         fps = "FPS: %.2f " % (1 / (end - start))
         #cv2.putText(frame, fps, (0, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 2)
         return frame, fps, boxes_return
@@ -230,8 +234,8 @@ def drawControl(avarr, gd, thr, yaw):
     map_gd = translate(gd, -1, 1, 0, 120)
     map_thr = translate(thr, -1, 1, 70, 110)
     map_yaw = int(translate(yaw, -1, 1, 22, 98))
-    logging.info("map_avarr : " + str(map_avarr))
-    logging.info("map_gd : " + str(map_gd))
+    #logging.info("map_avarr : " + str(map_avarr))
+    #logging.info("map_gd : " + str(map_gd))
     cv2.line(rounded, (10, 110), (10, int(map_thr)), (255, 0, 0), 2)
     cv2.circle(rounded, (int(map_gd), int(map_avarr)), 6, (0,200,0),1)
     cv2.line(rounded, (20, 110), (100, 110), (0, 255, 0), 1)
@@ -385,6 +389,7 @@ while not done:
         #Code for rising edge detection on BT 1
         #button1Read = joystick.get_button(0)
         button1state = joystick.get_button(0)
+        print(det.pointerIsInBox)
         if(button1state != lastButton1state):
             if(button1state == 1):
                 logging.debug("button 1 pressed")
