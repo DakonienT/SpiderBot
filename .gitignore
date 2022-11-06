@@ -34,3 +34,6 @@
 LICENSE
 LICENSE
 JoystickControl/yolov3.weights
+*.weights
+*.jpg
+*.mp4
