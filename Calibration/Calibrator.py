@@ -53,7 +53,9 @@ ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.sh
 
 # transform the matrix and distortion coefficients to writable lists
 data = {'camera_matrix': np.asarray(mtx).tolist(),
-        'dist_coeff': np.asarray(dist).tolist()}
+        'dist_coeff': np.asarray(dist).tolist(),
+        'rvec': np.asarray(rvecs).tolist(),
+        'tvec': np.asarray(tvecs).tolist()}
 
 # and save it to a file
 with open("calibration_matrix.yaml", "w") as f:
